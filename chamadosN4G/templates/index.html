@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Chamadas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Consulta de Chamadas</h1>
+        <form method="POST" class="form">
+            <div class="form-group">
+                <label for="datas">Selecione as Datas:</label>
+                <input type="text" id="datas" name="datas" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="status">Selecione o Status:</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="Todos">Todos</option>
+                    {% for status in status_options %}
+                    <option value="{{ status }}">{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn">Consultar</button>
+        </form>
+        <h2>Resultados</h2>
+        <table class="table">
+            <tr>
+                <th>Data</th>
+                <th>De</th>
+                <th>Para</th>
+                <th>Duração</th>
+                <th>Status</th>
+                <th>Turno</th>
+            </tr>
+            {% for row in data %}
+            <tr>
+                <td>{{ row['Data'] }}</td>
+                <td>{{ row['De'] }}</td>
+                <td>{{ row['Para'] }}</td>
+                <td>{{ row['Duracao'] }}</td>
+                <td>{{ row['Status'] }}</td>
+                <td>{{ row['Turno'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% if not turno_status_percent.empty %}
+        <h2>Estatísticas</h2>
+        <h3>Percentuais e Contagem de Status por Turno</h3>
+        <table class="table">
+            <tr>
+                <th>Turno</th>
+                {% for status in turno_status_percent.columns %}
+                <th>{{ status }}</th>
+                {% endfor %}
+            </tr>
+            {% for turno, values in turno_status_percent.iterrows() %}
+            <tr>
+                <td>{{ turno }}</td>
+                {% for status in turno_status_percent.columns %}
+                <td>{{ values[status] }}% ({{ turno_status_count.loc[turno, status] }})</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if not total_chamadas_por_turno.empty %}
+        <h3>Total de Chamadas por Turno</h3>
+        <table class="table">
+            <tr>
+                <th>Turno</th>
+                <th>Total</th>
+            </tr>
+            {% for turno, total in total_chamadas_por_turno.items() %}
+            <tr>
+                <td>{{ turno }}</td>
+                <td>{{ total }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if not duração_media_por_turno.empty %}
+        <h3>Duração Média das Chamadas por Turno</h3>
+        <table class="table">
+            <tr>
+                <th>Turno</th>
+                <th>Duração Média</th>
+            </tr>
+            {% for turno, duracao in duração_media_por_turno.items() %}
+            <tr>
+                <td>{{ turno }}</td>
+                <td>{{ duracao }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if not duração_total_por_turno.empty %}
+        <h3>Duração Total das Chamadas por Turno</h3>
+        <table class="table">
+            <tr>
+                <th>Turno</th>
+                <th>Duração Total</th>
+            </tr>
+            {% for turno, duracao in duração_total_por_turno.items() %}
+            <tr>
+                <td>{{ turno }}</td>
+                <td>{{ duracao }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if numero_mais_frequente %}
+        <h3>Número que mais liga para o suporte</h3>
+        <p>{{ numero_mais_frequente }} ({{ chamadas_numero_mais_frequente }} chamadas)</p>
+        {% endif %}
+    </div>
+    <script>
+        $(function() {
+            $('#datas').daterangepicker({
+                locale: {
+                    format: 'YYYY-MM-DD'
+                },
+                opens: 'left',
+                autoUpdateInput: false
+            }, function(start, end, label) {
+                $('#datas').val(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+            });
+        });
+    </script>
+</body>
+</html>
